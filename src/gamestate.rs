@@ -14,7 +14,6 @@ pub enum Difficulty {
     Hard,
     Insane,
 }
-#[allow(dead_code)]
 #[derive(Default, Copy, Clone)]
 pub enum DropSpeed {
     Slow = 50,
@@ -25,7 +24,6 @@ pub enum DropSpeed {
 }
 
 /// The current status of the game
-#[allow(dead_code)]
 #[derive(Clone, Debug, PartialEq)]
 pub enum GameStatus {
     Running,
@@ -229,7 +227,6 @@ impl<'a> GameState<'a> {
     ///
     /// Get the current piece
     ///
-    #[allow(dead_code)]
     pub fn get_current_piece(&self) -> &CurrentPiece {
         &self.current_piece
     }
@@ -251,7 +248,6 @@ impl<'a> GameState<'a> {
     ///
     /// Whether or not the tracer should be shown
     ///
-    #[allow(dead_code)]
     pub fn get_show_tracer(&self) -> bool {
         self.show_tracer
     }
@@ -293,7 +289,7 @@ impl<'a> GameState<'a> {
     ///
     /// Emit an event to all event handlers
     ///
-    pub fn emit(&self, event: &GameEvent) {
+    fn emit(&self, event: &GameEvent) {
         let handlers = self.event_handlers.borrow_mut();
         for handler in handlers.iter() {
             handler(event, &self);
@@ -313,7 +309,7 @@ impl<'a> GameState<'a> {
     ///
     /// Get the initial position for a new piece
     ///
-    pub fn get_initial_position(&self) -> (u16, u16) {
+    fn get_initial_position(&self) -> (u16, u16) {
         get_initial_position(self.width, self.height)
     }
 
@@ -370,7 +366,7 @@ impl<'a> GameState<'a> {
     ///
     /// Calculate the new score
     ///
-    pub fn update_score(&mut self, lines_cleared: i32) {
+    fn update_score(&mut self, lines_cleared: i32) {
         let lines = self.lines + lines_cleared;
         let level = (lines / 10) + 1;
 
@@ -470,7 +466,7 @@ impl<'a> GameState<'a> {
     /// This resets the current piece to the iniatial position
     /// Useful for undo, or restoring a game
     ///
-    pub fn reset_current_piece(&mut self) {
+    fn reset_current_piece(&mut self) {
         self.remove_current_piece();
         self.current_piece = self.current_piece.clone();
         self.current_piece.x = self.get_initial_position().0 as i32;
@@ -482,7 +478,7 @@ impl<'a> GameState<'a> {
     ///
     /// Updates the board after a change
     ///
-    pub fn update_board(self: &mut GameState<'a>) {
+    fn update_board(self: &mut GameState<'a>) {
         // Draw the tracer first so it does not collide with the piece
         if self.show_tracer {
             let mut tracer = self.current_piece.clone();
@@ -507,7 +503,7 @@ impl<'a> GameState<'a> {
     /// And then checking if the next piece can move, if not, the game is over
     /// and we return false, otherwise we return true, and emit a piece changed event
     ///
-    pub fn piece_hit_bottom(self: &mut GameState<'a>) -> bool {
+    fn piece_hit_bottom(self: &mut GameState<'a>) -> bool {
         self.pieces += 1;
         let lines_cleared = clear_lines(&mut self.board);
 

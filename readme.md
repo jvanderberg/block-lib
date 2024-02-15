@@ -1,56 +1,80 @@
-# Rustblocks
+# Block-lib
 
-Rustblocks is a simple tetromino based falling blocks game that uses crossterm to draw blocks in the terminal. A reasonable Unicode capable font is required as the character \u{2588} is used to draw the blocks.
+BLocks-lib is a game-logic only version of a simple tetromino based falling blocks game.
 
 The game sticks roughly to 'official' piece dynamics but does not implement 'kicking' off the walls. It is entirely single threaded, with no async.
 
-For performance, the game maintains two board buffers, last and current. Pieces are always recorded on the current board, and when committed only the differences are drawn to the screen.
+## Installing
 
-Controls: 
+`cargo add blocks-lib`
 
-    - Arrow keys or h,j,k,l to move
-    - space to drop
-    - Delete or Backspace to restart
-    - d toggle difficulty
-    - q to quit
-    - u to undo
-    - n to toggle next piece display
-    - t key toggles the tracer block
+## Creating and manipulating a game
 
+To create a game, you call the gamestate constructor, add an event handler, and then call start().
 
+```rust
+    let gs = GameState::new(
+        width,
+        height,
+        hide_next_piece,
+        difficulty
+    );
 
-
-
-
-
-### Running rustblocks
-
-```rustblocks -h```
-
-```
-Usage: rustblocks [OPTIONS]
-
-Options:
-  -x, --horizontal <HORIZONTAL>  The width of the board [default: 10]
-  -y, --vertical <VERTICAL>      The height of the board [default: 22]
-  -n, --hide-next-piece          Whether to show the next piece
-  -d, --difficulty <DIFFICULTY>  The difficulty of the game, changes the speed of the game. Easy, Medium, Hard, Insane, or 1, 2, 3, 4 [default: Easy]
-  -h, --help                     Print help
-  -V, --version                  Print version
-
+    let ev = |ge: &GameEvent, gs: &GameState| match ge {
+        ... Do something with the GameEvent to update the presentation ...
+    };
+    gs.add_event_handler(&ev);
+    gs.start();
 ```
 
-### Installing
+The GameState structure has a number of methods to move the game forward and control pieces:
 
+-   GameState::move_left() moves the current piece left
+-   GameState::move_right() moves the current piece right
+-   GameState::move_down() moves the current piece down
+-   GameState::rotate_right() rotates the current piece to the right
+-   GameState::drop() drops the current piece
+-   GameState::advance() advances the game a step by dropping the current piece, and performing other housekeeping activities. Implementations will typically call advanced() on a timer. Use GameState::get_piece_interval() to get the suggested interval in milliseconds, though there's nothing stopping an implementation from using its own interval.
 
-```cargo install rustblocks```
+## Game Event
 
-### Binaries
+The event handler gets called with significant game events:
 
-#### MacOS
+-   GameEvent::GameStarted when the game has started
+-   GameEvent::ScoreChanged when the score changes
+-   GameEvent::LevelChanged when the level changes
+-   GameEvent::PieceMoved when a piece has moved
+-   GameEvent::PieceChanged when the current piece (and next piece) have changed
+-   GameEvent::GameOver when the game is over
+-   GameEvent::GameReset when the game is reset
 
-[Rustblocks x86_64 (will run on M1/2/3)](./bin/MacOS/rustblocks)
+A visual implementation will respond to these events and interrogate the GameState object passed to the event handler to update the presentation layer.
 
-#### Windows
+## Game State methods
 
-[Rustblocks x86_64 (will run on Windows for Arm)](./bin/Windows/rustblocks.exe)
+-   GameState::get_board() returns the current pieces on the board. Each entry in the board.cells nested vector holds a PieceColor enum variant: Wall,
+    Empty,
+    Red,
+    Green,
+    Blue,
+    Yellow,
+    Cyan,
+    Magenta,
+    Orange,
+    Tracer. The color of Wall and Tracer are up to the implementation, but it's suggested to use the actual color names for the rest. Empty is just an empty space in the board.
+
+    Here's an example drawing loop:
+
+```rust
+    for y in 0..board.height {
+        for x in 0..board.width {
+            draw_square(x, y, board.cells[x as usize][y as usize]);
+        }
+    }
+```
+
+-   GameState::get_next_piece() returns the next piece that will be put onto the board
+-   GameState::get_score() returns the tuple (score, lines, level)
+-   GameState::get_status() returns the current game status.
+-   GameState::start() start a game, emitting the GameStarted event.
+-   GameState::add_event_handler(Fn(&GameEvent, &GameState)) Takes a closure or function and calls it every time a GameEvent is emitted. The handling function should not attempt to mutate GameState (in fact it cannot), this is purely to update the presentation of the board to the user, not to implement additonal game logic.
