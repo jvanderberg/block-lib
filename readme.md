@@ -1,6 +1,13 @@
-# Block-lib
+# blocks_lib
 
-BLocks-lib is a game-logic only version of a simple tetromino based falling blocks game.
+```
+⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜
+⬜🟨🟨⬜⬜🟪⬜⬜⬜⬜⬜⬜⬜⬜⬜🟧⬜🟦⬜⬜⬜⬜⬜🟩🟩⬜🟥🟥⬜⬜
+⬜🟨🟨⬜🟪🟪🟪⬜🟫🟫🟫🟫⬜🟧🟧🟧⬜🟦🟦🟦🟦⬜🟩🟩⬜⬜⬜🟥🟥⬜
+⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜
+```
+
+Blocks-lib is a game-logic only version of a simple tetromino based falling blocks game.
 
 The game sticks roughly to 'official' piece dynamics but does not implement 'kicking' off the walls. It is entirely single threaded, with no async.
 
