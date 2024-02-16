@@ -7,13 +7,11 @@ use crate::{
     pieces::{Piece, PieceColor},
 };
 
-#[derive(Clone, Debug)]
-pub enum Difficulty {
-    Easy,
-    Medium,
-    Hard,
-    Insane,
-}
+///
+/// The suggested delay in milliseconds for each move downwards for a drop.
+///
+/// Implementations should call 'advance' on this interval.
+///
 #[derive(Default, Copy, Clone)]
 pub enum DropSpeed {
     Slow = 50,
@@ -23,7 +21,9 @@ pub enum DropSpeed {
     Off = 0,
 }
 
+///
 /// The current status of the game
+///
 #[derive(Clone, Debug, PartialEq)]
 pub enum GameStatus {
     Running,
@@ -31,6 +31,20 @@ pub enum GameStatus {
     GameOver,
     NotStarted,
 }
+
+///
+/// The difficulty of the game
+/// This will affect the speed of the game, and the number of random pieces
+/// that are added to the board
+///
+#[derive(Clone, Debug)]
+pub enum Difficulty {
+    Easy,
+    Medium,
+    Hard,
+    Insane,
+}
+
 impl std::str::FromStr for Difficulty {
     type Err = String;
 
@@ -77,7 +91,7 @@ macro_rules! move_piece {
 
 ///
 /// The full game state of the blocks game,
-/// it's all private and accessed and mutated via impl methods below
+/// This is all private and accessed and mutated via impl methods below
 ///
 pub struct GameState<'a> {
     current_piece: CurrentPiece,
@@ -122,26 +136,72 @@ impl<'a> Clone for GameState<'a> {
         }
     }
 }
+
+///
+/// The events that can be emitted by the game.
+/// This is used to signal to the UI that something has changed
+/// and it should update the display.
+///
+/// The UI can also use this to trigger other events, such as sounds
+/// or animations.
+///
+/// The UI should not use this to change the game state or implement game logic.
+///
 #[derive(Clone, Debug, PartialEq)]
 pub enum GameEvent {
+    /// The score has changed
     ScoreChanged,
+    /// The level has changed
     LevelChanged,
+    /// The number of total lines cleared changed
     LinesClearedChanged,
+    /// The current piece has moved
     PieceMoved,
+    /// The current piece has changed (a new piece has spawned)
     PieceChanged,
+    /// The game is over
     GameOver,
+    /// The game has been reset
     GameReset,
+    /// The game has started
     GameStarted,
 }
+
 /// Get the initial position for a new piece
 fn get_initial_position(width: u16, _height: u16) -> (u16, u16) {
     ((width / 2) as u16, 2)
 }
 
 ///
-/// GameState impl
+/// GameState implementation
 ///
 impl<'a> GameState<'a> {
+    ///
+    /// Create a new game state
+    ///
+    /// # Arguments
+    ///     
+    /// * `width` - The width of the game board
+    /// * `height` - The height of the game board
+    /// * `hide_next_piece` - Whether or not to hide the next piece
+    /// * `difficulty` - The difficulty of the game
+    ///
+    /// To create a game, you call the gamestate constructor, add an event handler, and then call start().
+    /// ```
+    /// let gs = GameState::new(
+    ///     width,
+    ///     height,
+    ///     hide_next_piece,
+    ///     difficulty
+    /// );
+    /// let ev = |ge: &GameEvent, gs: &GameState| match ge {
+    ///     // Do something with the GameEvent to update the presentation ...
+    /// };
+    /// gs.add_event_handler(&ev);
+    /// gs.start();
+    /// ```
+    ///
+    #[cfg(not(doctest))]
     pub fn new(width: u16, height: u16, hide_next_piece: bool, difficulty: Difficulty) -> Self {
         let mut piece_bag = Bag::new();
 
@@ -260,11 +320,7 @@ impl<'a> GameState<'a> {
     }
 
     ///
-    /// Restore from a previous game state, useful for implementing save/restore or undo
-    /// This will restore the game state to the previous state, including the
-    /// current piece, the board, and the next piece
-    /// If the game is over, or there are no pieces left, it will return the
-    /// current state
+    /// Restore from a the last save state, effectively undoing the last drop
     ///
     pub fn undo(&self) -> GameState<'a> {
         if let Some(backup) = &self.backup {
@@ -421,13 +477,13 @@ impl<'a> GameState<'a> {
     }
 
     ///
-    /// Advance the game by one step, usually on a timer
-    /// This will move the current piece down one step
+    /// Advance the game by one step, usually on a timer. This will move the current piece down one step.
     /// If the piece cannot move down, it will commit the piece to the board
-    /// and spawn a new piece
+    /// and spawn a new piece.
+    ///
     /// If the new piece collides with the board, the game is over,
-    /// Ideally this should be called every get_piece_interval() milliseconds, though an
-    /// implementor can ignore that and call it as often as they like
+    /// Ideally this should be called every ```get_piece_interval()``` milliseconds, though an
+    /// implementation can ignore that and call it as often as they like
     ///
     pub fn advance_game(&mut self) -> bool {
         if self.status != GameStatus::Running {
@@ -446,9 +502,9 @@ impl<'a> GameState<'a> {
     }
 
     ///
-    /// Drop the current piece to the bottom of the board
-    /// This will commit the piece to the board and spawn a new piece
-    /// If the new piece collides with the board, the game is over
+    /// Drop the current piece to the bottom of the board.
+    /// This will commit the piece to the board and spawn a new piece.
+    /// If the new piece collides with the board, the game is over.
     ///
     pub fn drop(&mut self, drop_speed: DropSpeed) -> bool {
         if self.status != GameStatus::Running {
@@ -463,7 +519,7 @@ impl<'a> GameState<'a> {
     }
 
     ///
-    /// This resets the current piece to the iniatial position
+    /// This resets the current piece to the iniatial position.
     /// Useful for undo, or restoring a game
     ///
     fn reset_current_piece(&mut self) {
@@ -476,7 +532,7 @@ impl<'a> GameState<'a> {
     }
 
     ///
-    /// Updates the board after a change
+    /// Updates the board after a piece moves or rotates
     ///
     fn update_board(self: &mut GameState<'a>) {
         // Draw the tracer first so it does not collide with the piece
@@ -500,7 +556,7 @@ impl<'a> GameState<'a> {
     ///
     /// Handles the piece hitting the bottom of the board.
     /// This includes clearing any lines, updating the next piece
-    /// And then checking if the next piece can move, if not, the game is over
+    /// and then checking if the next piece can move, if not, the game is over
     /// and we return false, otherwise we return true, and emit a piece changed event
     ///
     fn piece_hit_bottom(self: &mut GameState<'a>) -> bool {
@@ -528,7 +584,7 @@ impl<'a> GameState<'a> {
     }
 
     ///
-    ///  Based on the difficulty, we want to introduce some random pieces, move them randomly, and drop them
+    /// Based on the difficulty, we want to introduce some random pieces, move them randomly, and drop them
     /// to make the game more interesting.
     ///
     pub fn initialize_board_pieces(self: &mut GameState<'a>) {

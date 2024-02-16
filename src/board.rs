@@ -7,6 +7,9 @@ use rand::seq::SliceRandom;
 
 use crate::pieces::{xy, Piece, PieceColor, PIECES};
 
+///
+/// The board is represented as a 2D array of u8, where PieceColor::Empty is an empty cell and any other value is a piece.
+///
 #[derive(Clone)]
 pub struct Board {
     pub width: u16,
@@ -14,6 +17,10 @@ pub struct Board {
     pub cells: Vec<Vec<PieceColor>>,
 }
 
+///
+/// An implementation of the 7-bag randomizer. Pieces are drawn from a bag of 7 pieces,
+/// and when the bag is empty, a new bag is created and shuffled.
+///
 #[derive(Clone)]
 pub struct Bag {
     pieces: Vec<Piece>,
@@ -38,6 +45,10 @@ impl Bag {
     }
 }
 
+///
+/// The current piece in the game, that is, a piece that is currently being moved by the player and has not
+/// been committed to the board yet.
+///
 #[derive(Clone, Debug)]
 pub struct CurrentPiece {
     pub piece: Piece,
@@ -77,6 +88,9 @@ pub fn draw_piece(piece: &Piece, board: &mut Board, x: i32, y: i32, color: Piece
     }
 }
 
+///
+/// Removes the piece from the board.
+///
 pub fn remove_piece(piece: &Piece, board: &mut Board, x: i32, y: i32) {
     for square in piece.view() {
         let x = xy(&square).0 as i32 + x as i32;
@@ -98,6 +112,7 @@ pub fn remove_tracer(board: &mut Board) {
         }
     }
 }
+
 ///
 /// Draws the tracer piece on the board.
 ///
@@ -112,6 +127,12 @@ pub fn draw_tracer(piece: &Piece, board: &mut Board, x: i32, y: i32) {
 }
 
 impl CurrentPiece {
+    ///
+    /// Detects if the position of the piece collides with existing squares on the board.
+    ///
+    /// The piece cannot intersect with the walls or the bottom of the board, and it cannot intersect with
+    /// existing squares on the board.
+    ///
     pub fn collides(&self, board: &Board, x: i32, y: i32) -> bool {
         for square in self.piece.view() {
             let dx = xy(&square).0 as i32;
@@ -132,6 +153,10 @@ impl CurrentPiece {
         false
     }
 
+    ///
+    /// Rotate this current piece right
+    /// Returns true if the rotation was successful, false if it was not.
+    ///
     pub fn rotate_right(&mut self, board: &Board) -> bool {
         self.piece.rotate_right();
         if self.collides(board, self.x, self.y) {
@@ -140,6 +165,11 @@ impl CurrentPiece {
         }
         true
     }
+
+    ///
+    /// Move this current piece to the left
+    /// Returns true if the move was successful, false if it was not.
+    ///
     pub fn move_left(&mut self, board: &Board) -> bool {
         let x = self.x - 1;
         if !self.collides(board, x, self.y) {
@@ -148,6 +178,11 @@ impl CurrentPiece {
         }
         false
     }
+
+    ///
+    /// Move this current piece to the right
+    /// Returns true if the move was successful, false if it was not.
+    ///
     pub fn move_right(&mut self, board: &Board) -> bool {
         let x = self.x + 1;
         if !self.collides(board, x, self.y) {
@@ -157,6 +192,10 @@ impl CurrentPiece {
         false
     }
 
+    ///
+    /// Move this current piece down
+    /// Returns true if the move was successful, false if it was not.
+    ///
     pub fn move_down(&mut self, board: &Board) -> bool {
         let y = self.y + 1;
         if !self.collides(board, self.x, y) {

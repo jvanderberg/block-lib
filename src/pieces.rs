@@ -1,3 +1,7 @@
+///
+/// The orientation of the pieces, with respect to the board.
+/// Up is the default orientation, with the canonical initial representation of the pieces.
+///
 #[derive(Clone, PartialEq, Debug)]
 pub enum Orientation {
     Up,
@@ -6,8 +10,12 @@ pub enum Orientation {
     Left,
 }
 
+///
+/// The colors of the pieces. Wall and Tracer or not really colors, but they are used to represent the wall and the
+/// tracer piece on the board, the implementation is free to choose the colors for these. The rest of the colors are the canonical
+/// colors of the pieces, and should be respected by an implementation.
+///
 #[derive(Clone, PartialEq, Debug, Copy)]
-#[repr(u8)]
 pub enum PieceColor {
     Wall,
     Empty,
@@ -26,7 +34,7 @@ pub enum PieceColor {
 ///
 ///  Grid encoding the offsets from the center piece, with only those locations
 ///  that are relevant to the pieces we encode.
-///
+///  ```text
 ///    NW  | N  | NE |
 ///    -----------------
 ///    W   | C  | E  | EE
@@ -34,6 +42,7 @@ pub enum PieceColor {
 ///    SW  | S  | SE | ESE
 ///    -----------------
 ///    WW  | SS | SBE|
+///   ```
 ///
 ///
 pub enum Offsets {
@@ -88,6 +97,9 @@ pub struct Piece {
 }
 
 impl Piece {
+    ///
+    /// Returns the view of the piece based on the current orientation.
+    ///
     pub fn view(&self) -> &PieceView {
         match self.orientation {
             Orientation::Up => &self.up,
@@ -97,6 +109,9 @@ impl Piece {
         }
     }
 
+    ///
+    /// Cycle through the orientations, in the clockwise direction.
+    ///
     pub fn rotate_left(&mut self) {
         self.orientation = match self.orientation {
             Orientation::Up => Orientation::Left,
@@ -106,6 +121,9 @@ impl Piece {
         };
     }
 
+    ///
+    /// Cycle through the orientations, in the counter-clockwise direction.
+    ///
     pub fn rotate_right(&mut self) {
         self.orientation = match self.orientation {
             Orientation::Up => Orientation::Right,
@@ -116,9 +134,13 @@ impl Piece {
     }
 }
 
+///
+/// All of the canonical pieces, in the order O, T, I, L, J, S, Z
+/// The pieces are encoded on a grid with Center=(0,0)
+///
 pub const PIECES: [Piece; 7] = [
-    // O piece
     Piece {
+        // O piece
         color: PieceColor::Yellow,
         orientation: Orientation::Up,
         up: [North, NorthEast, Center, East],
@@ -126,8 +148,8 @@ pub const PIECES: [Piece; 7] = [
         down: [North, NorthEast, Center, East],
         left: [North, NorthEast, Center, East],
     },
-    // T Piece
     Piece {
+        // T Piece
         color: PieceColor::Magenta,
         orientation: Orientation::Up,
         up: [Center, West, East, North],
