@@ -1,6 +1,6 @@
 [package]
 name = "blocks_lib"
-version = "0.3.0"
+version = "0.3.1"
 description = "Gamelogic only library for a simple tetromino based falling blocks game"
 edition = "2021"
 authors = ["Josh Vanderberg jvanderberg@gmail.com"]
@@ -9,7 +9,7 @@ license = "MIT"
 homepage = "https://github.com/jvanderberg/blocks-lib"
 repository = "https://github.com/jvanderberg/blocks-lib"
 keywords = ["games", "blocks"]
-categories = [ "games-and-entertainment"]
+categories = [ "games", "]
 
 [dependencies]
 rand = "0.8.5"
