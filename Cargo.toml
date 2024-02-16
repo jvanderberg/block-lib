@@ -9,7 +9,7 @@ license = "MIT"
 homepage = "https://github.com/jvanderberg/blocks-lib"
 repository = "https://github.com/jvanderberg/blocks-lib"
 keywords = ["games", "blocks"]
-categories = [ "games", "]
+categories = [ "games"]
 
 [dependencies]
 rand = "0.8.5"
