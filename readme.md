@@ -13,7 +13,7 @@ The game sticks roughly to 'official' piece dynamics but does not implement 'kic
 
 ## Installing
 
-`cargo add blocks-lib`
+`cargo add blocks_lib`
 
 ## Creating and manipulating a game
 
