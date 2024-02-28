@@ -1,6 +1,6 @@
 [package]
 name = "blocks_lib"
-version = "0.3.2"
+version = "0.3.3"
 description = "Gamelogic only library for a simple tetromino based falling blocks game"
 edition = "2021"
 authors = ["Josh Vanderberg jvanderberg@gmail.com"]

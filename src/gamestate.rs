@@ -45,6 +45,15 @@ pub enum Difficulty {
     Insane,
 }
 
+#[derive(Clone, Debug, Default, Copy)]
+pub enum Emoji {
+    Block,
+    Circle,
+    Heart,
+    #[default]
+    None,
+}
+
 impl std::str::FromStr for Difficulty {
     type Err = String;
 
@@ -66,6 +75,30 @@ impl std::string::ToString for Difficulty {
             Difficulty::Medium => "Medium".to_string(),
             Difficulty::Hard => "Hard".to_string(),
             Difficulty::Insane => "Insane".to_string(),
+        }
+    }
+}
+
+impl std::str::FromStr for Emoji {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "b" | "Block" | "block" | "square" | "Square" => Ok(Emoji::Block),
+            "h" | "Heart" | "heart" => Ok(Emoji::Heart),
+            "c" | "Circle" | "circle" => Ok(Emoji::Circle),
+            _ => Ok(Emoji::None),
+        }
+    }
+}
+
+impl std::string::ToString for Emoji {
+    fn to_string(&self) -> String {
+        match self {
+            Emoji::Block => "Square".to_string(),
+            Emoji::Circle => "Circle".to_string(),
+            Emoji::Heart => "Heart".to_string(),
+            Emoji::None => "None".to_string(),
         }
     }
 }
